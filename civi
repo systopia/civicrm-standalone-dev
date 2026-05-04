@@ -6,6 +6,7 @@
 #
 set -euo pipefail
 
+readonly APP_CONTAINER="app"
 readonly TEST_CONTAINER="app-test"
 readonly TEST_EXT_PATH="/opt/civicrm-test/ext"
 
@@ -14,6 +15,7 @@ readonly COMMANDS=(
   "phpunit|Run PHPUnit on an extension"
   "phpstan|Run PHPStan on an extension"
   "phpcs|Run PHPCS on an extension"
+  "cv|Run cv (CiviCRM CLI) inside the app container"
   "help|Show this help"
 )
 
@@ -31,6 +33,10 @@ run_composer_in_ext() {
 cmd_phpunit() { run_composer_in_ext phpunit "${1:-}" "${@:2}"; }
 cmd_phpstan() { run_composer_in_ext phpstan "${1:-}" "${@:2}"; }
 cmd_phpcs()   { run_composer_in_ext phpcs   "${1:-}" "${@:2}"; }
+
+cmd_cv() {
+  docker compose exec -u www-data "$APP_CONTAINER" cv "$@"
+}
 
 cmd_help() {
   cat <<EOF

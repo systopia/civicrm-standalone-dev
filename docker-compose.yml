@@ -31,6 +31,8 @@ services:
     networks:
       - default
       - proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy

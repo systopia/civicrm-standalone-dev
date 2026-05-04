@@ -1,6 +1,9 @@
 FROM debian:bullseye-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV CIVICRM_SETTINGS=/var/www/html/private/civicrm.settings.php
+
+WORKDIR /var/www/html
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -28,12 +31,14 @@ RUN apt-get update \
         php8.4-bcmath \
         php8.4-soap \
         php8.4-opcache \
+        php8.4-xdebug \
     && rm -rf /var/lib/apt/lists/* \
     && curl -LsS https://download.civicrm.org/cv/cv.phar -o /usr/local/bin/cv \
     && chmod +x /usr/local/bin/cv
 
 COPY app/nginx.conf /etc/nginx/sites-available/default
 COPY app/php.ini /etc/php/8.4/fpm/conf.d/99-civicrm.ini
+COPY app/xdebug.ini /etc/php/8.4/fpm/conf.d/99-xdebug.ini
 COPY app/supervisord.conf /etc/supervisor/conf.d/civicrm.conf
 COPY app/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY shared/install.php /usr/local/bin/civicrm-install.php

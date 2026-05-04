@@ -1,6 +1,6 @@
 # civicrm-standalone-dev
 
-Local Docker setup: Nginx + PHP 8.1-FPM, MariaDB 11.4.
+Local Docker setup: Nginx + PHP 8.4-FPM, MariaDB 11.4.
 
 ```bash
 docker compose up -d --build
@@ -57,3 +57,10 @@ composer, e.g. `./civi phpunit de.systopia.eventmessages -- --filter SomeTest`.
 ```bash
 ./civi phpcs de.systopia.eventmessages
 ```
+
+## Debugging
+
+Xdebug is baked into the `app` image and listens for triggers on port 9003.
+Start your IDE listener, then trigger Xdebug for the session by appending
+`?XDEBUG_SESSION_START=docker` once to any URL — a cookie is set for all
+following requests.
