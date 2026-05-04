@@ -14,6 +14,10 @@ just scripted.
 
 App: **https://civicrm.systopia.local** (via Traefik, `proxy` network).
 
+The `proxy` network is provided by [systopia/docker-dev-proxy](https://github.com/systopia/docker-dev-proxy)
+— start that stack first, otherwise `docker compose up` here will fail with a
+missing-network error.
+
 ## Admin login
 
 | | |
