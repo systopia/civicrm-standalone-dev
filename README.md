@@ -20,7 +20,7 @@ App: **https://civicrm.systopia.local** (via Traefik, `proxy` network).
 |---|---|
 | URL      | https://civicrm.systopia.local/civicrm/login |
 | User     | `admin` |
-| Password | `6rKpZ1HbU8` |
+| Password | `admin` |
 
 ## Extensions
 
