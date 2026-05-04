@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Dev helper CLI. Add a new command by:
+#   1. writing a `cmd_<name>` function
+#   2. adding a line to COMMANDS (name|description)
+#
+set -euo pipefail
+
+readonly TEST_CONTAINER="app-test"
+readonly TEST_EXT_PATH="/opt/civicrm-test/ext"
+
+# name|short description
+readonly COMMANDS=(
+  "phpunit|Run PHPUnit on an extension"
+  "phpstan|Run PHPStan on an extension"
+  "phpcs|Run PHPCS on an extension"
+  "help|Show this help"
+)
+
+# --- commands -----------------------------------------------------------------
+
+run_composer_in_ext() {
+  local script="$1" ext="$2"; shift 2
+  if [[ -z "$ext" ]]; then
+    echo "Usage: $0 $script <extension>" >&2
+    return 1
+  fi
+  docker compose exec -w "$TEST_EXT_PATH/$ext" "$TEST_CONTAINER" composer "$script" "$@"
+}
+
+cmd_phpunit() { run_composer_in_ext phpunit "${1:-}" "${@:2}"; }
+cmd_phpstan() { run_composer_in_ext phpstan "${1:-}" "${@:2}"; }
+cmd_phpcs()   { run_composer_in_ext phpcs   "${1:-}" "${@:2}"; }
+
+cmd_help() {
+  cat <<EOF
+Usage:  $0 COMMAND [ARGS...]
+
+CiviCRM dev helpers.
+
+Commands:
+EOF
+  for entry in "${COMMANDS[@]}"; do
+    printf "  %-10s %s\n" "${entry%%|*}" "${entry##*|}"
+  done
+}
+
+# --- dispatch -----------------------------------------------------------------
+
+main() {
+  if [[ $# -eq 0 ]]; then
+    cmd_help
+    exit 1
+  fi
+
+  local cmd="$1"; shift
+  if ! declare -f "cmd_$cmd" >/dev/null; then
+    echo "Unknown command: $cmd" >&2
+    echo >&2
+    cmd_help >&2
+    exit 1
+  fi
+
+  "cmd_$cmd" "$@"
+}
+
+main "$@"

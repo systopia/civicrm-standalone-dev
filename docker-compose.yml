@@ -1,0 +1,73 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: civicrm
+      MARIADB_USER: civicrm
+      MARIADB_PASSWORD: civicrm
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  app:
+    build:
+      context: ./docker
+      dockerfile: app/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - civicrm_app_data:/var/www/html
+      - civicrm_extensions:/var/www/html/ext
+    depends_on:
+      - db
+    environment:
+      CIVICRM_DB_HOST: db
+      CIVICRM_DB_NAME: civicrm
+      CIVICRM_DB_USER: civicrm
+      CIVICRM_DB_PASSWORD: civicrm
+      CIVICRM_BASE_URL: https://civicrm.systopia.local/
+    networks:
+      - default
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.civicrm.rule=Host(`civicrm.systopia.local`)
+      - traefik.http.routers.civicrm.entrypoints=websecure
+      - traefik.http.routers.civicrm.tls=true
+      - traefik.http.services.civicrm.loadbalancer.server.port=80
+
+  app-test:
+    build:
+      context: ./docker
+      dockerfile: app-test/Dockerfile
+    volumes:
+      - civicrm_test_data:/opt/civicrm-test
+      - civicrm_extensions:/opt/civicrm-test/ext
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: civicrm
+      DB_PASS: civicrm
+      DB_ROOT_USER: root
+      DB_ROOT_PASS: root
+      DB_NAME: civicrm_test
+
+volumes:
+  db_data:
+  civicrm_app_data:
+  civicrm_test_data:
+  civicrm_extensions:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ~/projects/systopia/civicrm-extensions
+
+networks:
+  default:
+  proxy:
+    external: true
